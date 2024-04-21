@@ -4,7 +4,7 @@ import json
 
 KAFKA_BROKER = 'localhost:9092'
 KAFKA_TOPIC = 'weather_data'
-OPENWEATHER_API_KEY = '81c744833e2031b8e82a0ae18a1cbeed'
+OPENWEATHER_API_KEY = 'YOUR_API_KEY'
 CITY = 'London'  
 
 def fetch_weather_data():
