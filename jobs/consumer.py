@@ -49,7 +49,7 @@ def main():
         StructField("clouds", StructType([
             StructField("all", IntegerType())
         ])),
-        StructField("dt", TimestampType()),  # Change timestamp field name to dt
+        StructField("dt", TimestampType()), 
         StructField("sys", StructType([
             StructField("type", IntegerType()),
             StructField("id", IntegerType()),
@@ -70,7 +70,7 @@ def main():
             .option('kafka.bootstrap.servers', 'broker:29092')
             .option('subscribe', topic)
             .option('startingOffsets', 'earliest')
-            .option('failOnDataLoss', 'false')  # Set failOnDataLoss to false
+            .option('failOnDataLoss', 'false') 
             .load()
             .selectExpr('CAST(value AS STRING)')
             .select(from_json(col('value'), schema).alias('data'))

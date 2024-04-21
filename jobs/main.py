@@ -1,10 +1,11 @@
 from confluent_kafka import Producer
 import requests
 import json
+from config import configuration
 
 KAFKA_BROKER = 'localhost:9092'
 KAFKA_TOPIC = 'weather_data'
-OPENWEATHER_API_KEY = 'YOUR_API_KEY'
+OPENWEATHER_API_KEY = configuration.get('API_KEY')
 CITY = 'London'  
 
 def fetch_weather_data():
@@ -23,14 +24,9 @@ def produce_weather_data():
 
     weather_data = fetch_weather_data()
 
-    # Produce message to Kafka topic
     p.produce(KAFKA_TOPIC, json.dumps(weather_data).encode('utf-8'), callback=delivery_report)
 
-    # Wait up to 1 second for events. Callbacks will be invoked during
-    # this method call if the message is acknowledged.
     p.poll(1)
-
-    # Wait until all messages have been delivered
     p.flush()
 
 if __name__ == '__main__':
