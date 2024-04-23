@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.types import StructType, StructField, StringType, IntegerType, FloatType, TimestampType
-from pyspark.sql.functions import from_json, col
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType, FloatType, TimestampType, ArrayType
+from pyspark.sql.functions import from_json, col, explode
 from config import configuration
 
 def main():
@@ -25,12 +25,12 @@ def main():
             StructField("lon", FloatType()),
             StructField("lat", FloatType())
         ])),
-        StructField("weather", StructType([
-            StructField("id", IntegerType()),
-            StructField("main", StringType()),
-            StructField("description", StringType()),
-            StructField("icon", StringType())
-        ])),
+        StructField("weather", ArrayType(StructType([
+        StructField("id", IntegerType()),
+        StructField("main", StringType()),
+        StructField("description", StringType()),
+        StructField("icon", StringType())
+    ]))),
         StructField("base", StringType()),
         StructField("main", StructType([
             StructField("temp", FloatType()),
@@ -78,10 +78,10 @@ def main():
             .selectExpr(
                 'coord.lon AS longitude',
                 'coord.lat AS latitude',
-                'weather.id AS weather_id',
-                'weather.main AS weather_main',
-                'weather.description AS weather_description',
-                'weather.icon AS weather_icon',
+                'weather[0].id AS weather_id',
+                'weather[0].main AS weather_main',
+                'weather[0].description AS weather_description',
+                'weather[0].icon AS weather_icon',
                 'base',
                 'main.temp AS main_temp',
                 'main.feels_like AS main_feels_like',
@@ -105,6 +105,7 @@ def main():
                 'cod'
             )
         )
+
 
     
     def streamWriter(input, checkpointFolder, output):  
