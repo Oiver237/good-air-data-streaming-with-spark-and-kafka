@@ -20,7 +20,6 @@ def main():
 
     spark.sparkContext.setLogLevel('WARN')
 
-    # Define schema for JSON data
     schema = StructType([
         StructField("coord", StructType([
             StructField("lon", FloatType()),
@@ -76,10 +75,39 @@ def main():
             .select(from_json(col('value'), schema).alias('data'))
             .select('data.*')
             .withWatermark('dt', '2 minutes')
+            .selectExpr(
+                'coord.lon AS longitude',
+                'coord.lat AS latitude',
+                'weather.id AS weather_id',
+                'weather.main AS weather_main',
+                'weather.description AS weather_description',
+                'weather.icon AS weather_icon',
+                'base',
+                'main.temp AS main_temp',
+                'main.feels_like AS main_feels_like',
+                'main.temp_min AS main_temp_min',
+                'main.temp_max AS main_temp_max',
+                'main.pressure AS main_pressure',
+                'main.humidity AS main_humidity',
+                'visibility',
+                'wind.speed AS wind_speed',
+                'wind.deg AS wind_deg',
+                'clouds.all AS clouds',
+                'dt',
+                'sys.type AS sys_type',
+                'sys.id AS sys_id',
+                'sys.country AS sys_country',
+                'sys.sunrise AS sys_sunrise',
+                'sys.sunset AS sys_sunset',
+                'timezone',
+                'id',
+                'name',
+                'cod'
             )
+        )
 
     
-    def streamWriter(input, checkpointFolder, output):  # Remove DataFrame type hint
+    def streamWriter(input, checkpointFolder, output):  
         return (input.writeStream
                 .format('parquet')
                 .option('checkpointLocation', checkpointFolder)
