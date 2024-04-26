@@ -1,4 +1,7 @@
 # good-air-data-streaming-with-spark-and-kafka
+
+![Archi-data-streaming](https://github.com/Oiver237/good-air-data-streaming-with-spark-and-kafka/assets/73575249/d7a753d5-8f2b-45c7-a84c-42646fa41c93)
+
 ### FR
 Ce pipeline Spark vise à ingérer en streaming les données météorologiques et les données de qualité de l'air des 10 plus grandes villes de France à partir de sujets Apache Kafka, à les traiter à l'aide de Spark Structured Streaming, à écrire les données traitées dans des fichiers Parquet stockés dans un bucket Amazon S3, et enfin à utiliser AWS Redshift comme datawarehouse. Les données sont stockées dans Redshift et prêtes à être utilisées par les data scientites ou les data analystes.
 
