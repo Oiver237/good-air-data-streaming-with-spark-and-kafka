@@ -5,6 +5,6 @@ The data are stored in Redshift and ready to be used by data scientists or data 
 
 
 ## Requirements
--Python 3.x
--AWS
--Docker (-Apache Spark 3.x,Kafka 0.10.x or later, Zookeeper)
+- Python 3.x
+- AWS
+- Docker (Apache Spark 3.x,Kafka 0.10.x or later, Zookeeper)
