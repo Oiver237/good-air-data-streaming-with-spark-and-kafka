@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.types import StructType, StructField, StringType, IntegerType, FloatType, TimestampType, ArrayType
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType, FloatType, TimestampType, ArrayType, DoubleType
 from pyspark.sql.functions import from_json, col, explode
 from config import configuration
 
@@ -20,7 +20,7 @@ def main():
 
     spark.sparkContext.setLogLevel('WARN')
 
-    schema = StructType([
+    weather_schema = StructType([
         StructField("coord", StructType([
             StructField("lon", FloatType()),
             StructField("lat", FloatType())
@@ -62,8 +62,71 @@ def main():
         StructField("cod", IntegerType())
     ])
 
-    
-    def read_kafka_topic(topic, schema):
+    air_quality_schema = StructType([
+        StructField("status", StringType(), True),
+        StructField("data", StructType([
+            StructField("aqi", IntegerType(), True),
+            StructField("idx", IntegerType(), True),
+            StructField("attributions", ArrayType(StructType([
+                StructField("url", StringType(), True),
+                StructField("name", StringType(), True),
+                StructField("logo", StringType(), True)
+            ])), True),
+            StructField("city", StructType([
+                StructField("geo", ArrayType(DoubleType()), True),
+                StructField("name", StringType(), True),
+                StructField("url", StringType(), True),
+                StructField("location", StringType(), True)
+            ]), True),
+            StructField("dominentpol", StringType(), True),
+            StructField("iaqi", StructType([
+                StructField("dew", StructType([StructField("v", DoubleType(), True)]), True),
+                StructField("h", StructType([StructField("v", DoubleType(), True)]), True),
+                StructField("no2", StructType([StructField("v", DoubleType(), True)]), True),
+                StructField("o3", StructType([StructField("v", DoubleType(), True)]), True),
+                StructField("p", StructType([StructField("v", DoubleType(), True)]), True),
+                StructField("pm10", StructType([StructField("v", DoubleType(), True)]), True),
+                StructField("pm25", StructType([StructField("v", DoubleType(), True)]), True),
+                StructField("t", StructType([StructField("v", DoubleType(), True)]), True),
+                StructField("w", StructType([StructField("v", DoubleType(), True)]), True),
+                StructField("wg", StructType([StructField("v", DoubleType(), True)]), True)
+            ]), True),
+            StructField("time", StructType([
+                StructField("s", TimestampType(), True),
+                StructField("tz", StringType(), True),
+                StructField("v", IntegerType(), True),
+                StructField("iso", StringType(), True)
+            ]), True),
+            StructField("forecast", StructType([
+                StructField("daily", StructType([
+                    StructField("o3", ArrayType(StructType([
+                        StructField("avg", IntegerType(), True),
+                        StructField("day", StringType(), True),
+                        StructField("max", IntegerType(), True),
+                        StructField("min", IntegerType(), True)
+                    ])), True),
+                    StructField("pm10", ArrayType(StructType([
+                        StructField("avg", IntegerType(), True),
+                        StructField("day", StringType(), True),
+                        StructField("max", IntegerType(), True),
+                        StructField("min", IntegerType(), True)
+                    ])), True),
+                    StructField("pm25", ArrayType(StructType([
+                        StructField("avg", IntegerType(), True),
+                        StructField("day", StringType(), True),
+                        StructField("max", IntegerType(), True),
+                        StructField("min", IntegerType(), True)
+                    ])), True)
+                ]), True)
+            ]), True),
+            StructField("debug", StructType([
+                StructField("sync", StringType(), True)
+            ]), True)
+        ]), True)
+    ])
+
+
+    def read_kafka_weather_topic(topic, schema):
         return (spark.readStream
             .format('kafka')
             .option('kafka.bootstrap.servers', 'broker:29092')
@@ -106,23 +169,49 @@ def main():
             )
         )
 
+    def read_kafka_air_quality_topic(topic, schema):
+        return (spark.readStream
+        .format('kafka')
+        .option('kafka.bootstrap.servers', 'broker:29092')
+        .option('subscribe', topic)
+        .option('startingOffsets', 'earliest')
+        .option('failOnDataLoss', 'false') 
+        .load()
+        .selectExpr('CAST(value AS STRING)')
+        .select(from_json(col('value'), schema).alias('data'))
+        .select('data.*')
+        .selectExpr(
+                "data.city.name AS city_name",
+                "data.city.geo AS city_geo",
+                "data.aqi AS aqi",
+                "data.dominentpol",
+                "data.iaqi.o3.v AS o3",
+                "data.iaqi.pm10.v AS pm10",
+                "data.iaqi.pm25.v AS pm25",
+                "data.time.s AS time_s"
+            )
+    )
 
-    
+
     def streamWriter(input, checkpointFolder, output):  
-        return (input.writeStream
-                .format('parquet')
-                .option('checkpointLocation', checkpointFolder)
-                .option('failOnDataLoss', 'false')
-                .option('path', output)
-                .outputMode('append')
-                .start())
+            return (input.writeStream
+                    .format('parquet')
+                    .option('checkpointLocation', checkpointFolder)
+                    .option('failOnDataLoss', 'false')
+                    .option('path', output)
+                    .outputMode('append')
+                    .start())
 
-    dataDF = read_kafka_topic('weather_data', schema).alias('weather')
+    weather_dataDF = read_kafka_weather_topic('weather_data', weather_schema).alias('weather')
+    air_quality_dataDF = read_kafka_air_quality_topic('air_quality_data', air_quality_schema).alias('air_quality')
 
-    query = streamWriter(dataDF, 's3a://olivier-spark-streaming-data/checkpoints/weather_data',
+    query1 = streamWriter(weather_dataDF, 's3a://olivier-spark-streaming-data/checkpoints/weather_data',
                          's3a://olivier-spark-streaming-data/data/weather_data')
+    
+    query2 = streamWriter(air_quality_dataDF, 's3a://olivier-spark-streaming-data/checkpoints/air_quality_data',
+                         's3a://olivier-spark-streaming-data/data/air_quality_data')
 
-    query.awaitTermination()
+    query2.awaitTermination()
 
 if __name__ == "__main__":
     main()

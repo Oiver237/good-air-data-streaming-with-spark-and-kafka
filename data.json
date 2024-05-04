@@ -1,0 +1,74 @@
+{
+    "status": "ok",
+    "data": {
+      "aqi": 21,
+      "idx": 3821,
+      "attributions": [
+        {
+          "url": "http://www.atmo-grandest.eu/",
+          "name": "ASPA Alsace : pollution atmosph\u00e9rique, surveillance de la qualit\u00e9 de l\u2019air",
+          "logo": "France-atmo-grand-est.png"
+        },
+        {
+          "url": "http://www.atmo-grandest.eu/",
+          "name": "AtmoGE - La qualit\u00e9 de l&#8217;air dans le Grand Est",
+          "logo": "France-atmo-grand-est.png"
+        },
+        {
+          "url": "https://waqi.info/",
+          "name": "World Air Quality Index Project"
+        }
+      ],
+      "city": {
+        "geo": [48.59043, 7.744983],
+        "name": "Clemenceau, Strasbourg, Alsace, France",
+        "url": "https://aqicn.org/city/france/alsace/strasbourg/clemenceau",
+        "location": ""
+      },
+      "dominentpol": "pm10",
+      "iaqi": {
+        "dew": {"v": 1},
+        "h": {"v": 75},
+        "no2": {"v": 23},
+        "o3": {"v": 12.6},
+        "p": {"v": 1012},
+        "pm10": {"v": 21},
+        "pm25": {"v": 63},
+        "t": {"v": 5},
+        "w": {"v": 1.5},
+        "wg": {"v": 10.2}
+      },
+      "time": {
+        "s": "2024-04-24 06:00:00",
+        "tz": "+02:00",
+        "v": 1713938400,
+        "iso": "2024-04-24T06:00:00+02:00"
+      },
+      "forecast": {
+        "daily": {
+          "o3": [
+            {"avg": 27, "day": "2024-04-23", "max": 41, "min": 19},
+            {"avg": 25, "day": "2024-04-24", "max": 36, "min": 14},
+            {"avg": 28, "day": "2024-04-25", "max": 38, "min": 21},
+            {"avg": 27, "day": "2024-04-26", "max": 38, "min": 18},
+            {"avg": 22, "day": "2024-04-27", "max": 22, "min": 18}
+          ],
+          "pm10": [
+            {"avg": 14, "day": "2024-04-23", "max": 17, "min": 10},
+            {"avg": 16, "day": "2024-04-24", "max": 23, "min": 7},
+            {"avg": 12, "day": "2024-04-25", "max": 15, "min": 7},
+            {"avg": 12, "day": "2024-04-26", "max": 16, "min": 7},
+            {"avg": 14, "day": "2024-04-27", "max": 14, "min": 14}
+          ],
+          "pm25": [
+            {"avg": 53, "day": "2024-04-23", "max": 59, "min": 41},
+            {"avg": 52, "day": "2024-04-24", "max": 73, "min": 21},
+            {"avg": 36, "day": "2024-04-25", "max": 50, "min": 22},
+            {"avg": 40, "day": "2024-04-26", "max": 54, "min": 15},
+            {"avg": 53, "day": "2024-04-27", "max": 53, "min": 47}
+          ]
+        }
+      },
+      "debug": {"sync": "2024-04-24T16:46:07+09:00"}
+    }
+  }

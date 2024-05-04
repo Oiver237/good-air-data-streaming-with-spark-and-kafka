@@ -4,12 +4,19 @@ import json
 from config import configuration
 
 KAFKA_BROKER = 'localhost:9092'
-KAFKA_TOPIC = 'weather_data'
-OPENWEATHER_API_KEY = configuration.get('API_KEY')
+WEATHER_KAFKA_TOPIC = 'weather_data'
+AIR_QUALITY_KAFKA_TOPIC = 'air_quality_data'
+OPENWEATHER_API_KEY = configuration.get('OPENWEATHER_API_KEY')
+WAQI_API_TOKEN = configuration.get('WAQI_API_TOKEN')
 CITIES = ['Paris','Marseille', 'Lyon', 'Lille', 'Nantes', 'Bordeaux', 'Toulouse', 'Nice', 'Montpellier',' Strasbourg']  
 
 def fetch_weather_data(city):
     url = f'http://api.openweathermap.org/data/2.5/weather?q={city}&appid={OPENWEATHER_API_KEY}'
+    response = requests.get(url)
+    return response.json()
+
+def fetch_air_quality_data(city):
+    url = f'https://api.waqi.info/feed/{city}/?token={WAQI_API_TOKEN}'
     response = requests.get(url)
     return response.json()
 
@@ -25,12 +32,16 @@ def produce_weather_data():
     for city in CITIES:
         weather_data = fetch_weather_data(city)
 
-        p.produce(KAFKA_TOPIC, json.dumps(weather_data).encode('utf-8'), callback=delivery_report)
+        p.produce(WEATHER_KAFKA_TOPIC, json.dumps(weather_data).encode('utf-8'), callback=delivery_report)
 
-        # Wait for delivery report
         p.poll(1)
-    
-    # Flush messages to ensure delivery
+
+        air_quality_data = fetch_air_quality_data(city)
+
+        p.produce(AIR_QUALITY_KAFKA_TOPIC, json.dumps(air_quality_data).encode('utf-8'), callback=delivery_report)
+
+        p.poll(1)
+
     p.flush()
 
 if __name__ == '__main__':
